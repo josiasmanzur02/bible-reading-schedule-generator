@@ -115,6 +115,7 @@ a {
 .form {
   display: grid;
   gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
 .field {
@@ -165,6 +166,7 @@ select {
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
+  grid-column: 1 / -1;
 }
 
 .btn {
@@ -301,7 +303,7 @@ select {
 @media (max-width: 640px) {
   .table-head,
   .table-row {
-    grid-template-columns: 120px 1fr;
+    grid-template-columns: minmax(120px, 1fr) 2fr;
     padding: 12px 14px;
   }
 

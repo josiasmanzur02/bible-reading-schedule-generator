@@ -176,28 +176,51 @@ app.get("/download", (req, res) => {
   doc.text(`Days: ${result.totalDays}`);
   doc.moveDown();
 
+  const columnWidth = 155;
+  const gap = 10;
+  const columns = [50, 50 + columnWidth + gap, 50 + 2 * (columnWidth + gap)];
+  const textWidth = columnWidth - 32;
+
   const drawHeader = () => {
-    const y = doc.y;
-    doc.fontSize(11).text("Done", 50, y, { width: 30 });
-    doc.text("Date", 90, y, { width: 80 });
-    doc.text("Reading", 180, y, { width: 350 });
-    doc.moveTo(50, y + 14).lineTo(540, y + 14).strokeColor("#cccccc").stroke();
-    doc.moveDown(0.6);
+    const y0 = doc.y;
+    columns.forEach((x) => {
+      doc.save();
+      doc.lineWidth(0.5).rect(x, y0, columnWidth, 22).fillAndStroke("#f2f2f2", "#cccccc");
+      doc.fillColor("#111111").fontSize(10).text("Done   Date   Reading", x + 8, y0 + 6, {
+        width: columnWidth - 16,
+      });
+      doc.restore();
+    });
+    doc.moveDown(0.5);
+    return y0 + 26;
   };
 
-  drawHeader();
+  let y = drawHeader();
+  let colIndex = 0;
 
   result.schedule.forEach((entry) => {
-    if (doc.y > doc.page.height - 80) {
+    const readingHeight = doc.heightOfString(entry.reading, { width: textWidth, align: "left" });
+    const rowHeight = Math.max(32, readingHeight + 18);
+
+    if (y + rowHeight > doc.page.height - 60) {
       doc.addPage();
-      drawHeader();
+      y = drawHeader();
+      colIndex = 0;
     }
-    const rowY = doc.y;
-    doc.rect(50, rowY - 2, 10, 10).strokeColor("#555555").stroke();
+
+    const x = columns[colIndex];
+    doc.lineWidth(0.5).rect(x, y, columnWidth, rowHeight).stroke("#cccccc");
+    doc.rect(x + 8, y + 8, 12, 12).stroke("#777777");
     doc.fontSize(10).fillColor("#111111");
-    doc.text(entry.date, 90, rowY, { width: 80 });
-    doc.text(entry.reading, 180, rowY, { width: 330 });
-    doc.moveDown(0.5);
+    doc.text(entry.date, x + 26, y + 6, { width: textWidth });
+    doc.text(entry.reading, x + 26, y + 20, { width: textWidth });
+
+    if (colIndex === columns.length - 1) {
+      y += rowHeight + 8;
+      colIndex = 0;
+    } else {
+      colIndex += 1;
+    }
   });
 
   doc.end();
