@@ -16,7 +16,7 @@
       </div>
     </div>
     <header class="topbar">
-      <div class="brand">Bible Plan Builder</div>
+      <div class="brand">Bible Reading Schedule Generator</div>
       <div class="top-meta">
         <span>Total: <strong><%= stats.totalChapters %></strong></span>
         <span class="divider">•</span>
@@ -66,6 +66,8 @@
                 type="submit"
                 formaction="/download"
                 formmethod="get"
+                formtarget="_blank"
+                rel="noopener"
                 class="btn ghost"
                 name="action"
                 value="download"
