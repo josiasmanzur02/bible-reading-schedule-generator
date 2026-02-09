@@ -85,9 +85,16 @@ function buildSchedule(startDateStr, endDateStr, startBookName, endBookName) {
     if (endIdx >= startIdx) {
       const startRef = selected[startIdx];
       const endRef = selected[endIdx];
-      schedule.push({ date: label, reading: formatRange(startRef, endRef) });
+      const chaptersCount = endIdx - startIdx + 1;
+      const minutes = Math.max(5, Math.round(chaptersCount * 4)); // rough estimate
+      schedule.push({
+        date: label,
+        reading: formatRange(startRef, endRef),
+        chaptersCount,
+        minutes,
+      });
     } else {
-      schedule.push({ date: label, reading: "—" });
+      schedule.push({ date: label, reading: "—", chaptersCount: 0, minutes: 0 });
     }
   }
 
@@ -167,6 +174,14 @@ app.get("/download", (req, res) => {
   const prettyStart = dayjs(values.startDate).format("MMM D, YYYY");
   const prettyEnd = dayjs(values.endDate).format("MMM D, YYYY");
 
+  const avgMinutes =
+    result.schedule.length && result.schedule.some((s) => s.minutes > 0)
+      ? Math.round(
+          result.schedule.reduce((sum, s) => sum + s.minutes, 0) /
+            Math.max(1, result.schedule.filter((s) => s.minutes > 0).length)
+        )
+      : 0;
+
   doc.fontSize(20).text("Bible Reading Schedule", { align: "left" });
   doc.moveDown(0.3);
   doc.fontSize(12).text(`Start date: ${prettyStart}`);
@@ -174,6 +189,9 @@ app.get("/download", (req, res) => {
   doc.text(`Books: ${startBook} - ${endBook}`);
   doc.text(`Chapters in range: ${result.selectedCount} of ${totalChapters}`);
   doc.text(`Days: ${result.totalDays}`);
+  if (avgMinutes) {
+    doc.text(`Approx. daily time: ~${avgMinutes} minutes`);
+  }
   doc.moveDown();
 
   const columnWidth = 155;
@@ -213,7 +231,7 @@ app.get("/download", (req, res) => {
     doc.rect(x + 8, y + 8, 12, 12).stroke("#777777");
     doc.fontSize(10).fillColor("#111111");
     doc.text(entry.date, x + 26, y + 6, { width: textWidth });
-    doc.text(entry.reading, x + 26, y + 20, { width: textWidth });
+    doc.text(entry.reading, x + 26, y + 18, { width: textWidth });
 
     if (colIndex === columns.length - 1) {
       y += rowHeight + 8;

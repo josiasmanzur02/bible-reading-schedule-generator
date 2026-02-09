@@ -61,8 +61,16 @@
             </label>
 
             <div class="actions">
-              <button type="submit" class="btn primary">Build schedule</button>
-              <button type="submit" formaction="/download" formmethod="get" class="btn ghost">
+              <button type="submit" class="btn primary" name="action" value="preview">Build schedule</button>
+              <button
+                type="submit"
+                formaction="/download"
+                formmethod="get"
+                class="btn ghost"
+                name="action"
+                value="download"
+                data-skip-loading="true"
+              >
                 Download PDF
               </button>
             </div>
@@ -102,7 +110,10 @@
                     <span class="checkbox"></span>
                     <span class="date-label"><%= item.date %></span>
                   </div>
-                  <div><%= item.reading %></div>
+                  <div>
+                    <div><%= item.reading %></div>
+                    <div class="reading-meta">≈ <%= item.minutes %> min · <%= item.chaptersCount %> chapter<%= item.chaptersCount === 1 ? "" : "s" %></div>
+                  </div>
                 </div>
               <% }); %>
             </div>
@@ -130,9 +141,15 @@
       const form = document.querySelector("form.form");
       const overlay = document.getElementById("progress-overlay");
       if (form && overlay) {
-        form.addEventListener("submit", () => {
+        form.addEventListener("submit", (e) => {
+          const submitter = e.submitter;
+          const skip = submitter && submitter.dataset && submitter.dataset.skipLoading === "true";
+          if (skip) return;
+          e.preventDefault();
           overlay.hidden = false;
           document.body.classList.add("loading");
+          // allow paint before navigating
+          requestAnimationFrame(() => form.submit());
         });
       }
     </script>

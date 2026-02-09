@@ -296,6 +296,12 @@ select {
   vertical-align: middle;
 }
 
+.reading-meta {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
 .empty-state .card {
   margin-top: 32px;
   padding: 24px;
