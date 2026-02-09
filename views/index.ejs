@@ -9,7 +9,7 @@
   <body>
     <header class="topbar">
       <div class="brand">Bible Plan Builder</div>
-      <div class="top-meta">
+      <div class="top-meta"> 
         <span>Total: <strong><%= stats.totalChapters %></strong></span>
         <span class="divider">•</span>
         <span>Selected: <strong><%= stats.selectedChapters || stats.totalChapters %></strong></span>
@@ -22,13 +22,8 @@
           <p class="eyebrow">From date to daily readings</p>
           <h1>Generate a printable Bible reading schedule</h1>
           <p class="lede">
-            Drop in your start and end dates and get a day-by-day plan to finish the entire Bible.
+            Place your start and end dates and get a day-by-day plan to finish the entire Bible.
           </p>
-          <!--ul class="highlights">
-            <li>Desktop and mobile friendly</li>
-            <li>Evenly spreads 1,189 chapters across your calendar</li>
-            <li>Built with Express, EJS, and PDFKit</li>
-          </ul-->
         </div>
         <div class="panel">
           <form class="form" action="/schedule" method="get">
@@ -63,9 +58,6 @@
                 Download PDF
               </button>
             </div>
-            <p class="hint">
-              Tip: choose any range—365 days, 180 days, or a focused season—and we will spread the readings evenly.
-            </p>
           </form>
 
           <% if (error) { %>
@@ -113,14 +105,13 @@
           <div class="card">
             <p class="eyebrow">No schedule yet</p>
             <h3>Pick dates to generate your plan.</h3>
-            <p>Use the form above to set your calendar. We will spread all 1,189 chapters evenly so you finish on time.</p>
+            <p>Use the form above to set your calendar.</p>
           </div>
         </section>
       <% } %>
     </main>
 
     <footer class="footer">
-      <!--p>Made with Scripture in mind — generates on the fly, no accounts needed.</p-->
     </footer>
   </body>
 </html>
