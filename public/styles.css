@@ -2,6 +2,7 @@
 
 :root {
   --bg: #0f172a;
+  --bg-solid: #05070f;
   --panel: #0b1224;
   --accent: #f97316;
   --muted: #cdd5f5;
@@ -16,12 +17,17 @@
   box-sizing: border-box;
 }
 
+html {
+  background: var(--bg-solid);
+  color-scheme: dark;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
   font-family: "Inter", system-ui, -apple-system, sans-serif;
   color: var(--text);
-  background: radial-gradient(120% 120% at 20% 20%, #13254b 0%, #0b1021 50%, #05070f 100%);
+  background: radial-gradient(120% 120% at 20% 20%, #13254b 0%, #0b1021 50%, var(--bg-solid) 100%);
 }
 
 a {
@@ -131,14 +137,17 @@ a {
 input[type="date"] {
   width: 100%;
   min-width: 0;
+  height: 52px;
   background: #0a1020;
   border: 1px solid var(--line);
   border-radius: 10px;
   color: var(--text);
   padding: 12px 14px;
   font-size: 16px;
+  line-height: 1.2;
   outline: 2px solid transparent;
   transition: border-color 120ms ease, outline-color 120ms ease;
+  appearance: none;
 }
 
 input[type="date"]:focus,
@@ -150,6 +159,7 @@ select:focus {
 select {
   width: 100%;
   min-width: 0;
+  height: 52px;
   background: #0a1020;
   border: 1px solid var(--line);
   border-radius: 10px;
@@ -382,6 +392,23 @@ body.loading .progress-overlay {
     padding-left: 0;
     color: var(--muted);
     line-height: 1.4;
+  }
+
+  .schedule .table {
+    border: none;
+    background: transparent;
+  }
+
+  .table-body {
+    max-height: none;
+  }
+
+  .table-row {
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: rgba(8, 11, 20, 0.9);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    margin-bottom: 12px;
   }
 
   .topbar {
