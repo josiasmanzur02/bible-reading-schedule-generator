@@ -1,0 +1,19 @@
+{
+  "name": "bible-reading-schedule-generator",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "Josias Manzur",
+  "type": "commonjs",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "dayjs": "^1.11.19",
+    "ejs": "^4.0.1",
+    "express": "^5.2.1",
+    "pdfkit": "^0.17.2"
+  }
+}

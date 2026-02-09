@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bible Reading Schedule Generator</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Bible Plan Builder</div>
+      <div class="top-meta">
+        <span>Total: <strong><%= stats.totalChapters %></strong></span>
+        <span class="divider">•</span>
+        <span>Selected: <strong><%= stats.selectedChapters || stats.totalChapters %></strong></span>
+      </div>
+    </header>
+
+    <main class="page">
+      <section class="hero">
+        <div>
+          <p class="eyebrow">From date to daily readings</p>
+          <h1>Generate a printable Bible reading schedule</h1>
+          <p class="lede">
+            Drop in your start and end dates and get a day-by-day plan to finish the entire Bible.
+          </p>
+          <!--ul class="highlights">
+            <li>Desktop and mobile friendly</li>
+            <li>Evenly spreads 1,189 chapters across your calendar</li>
+            <li>Built with Express, EJS, and PDFKit</li>
+          </ul-->
+        </div>
+        <div class="panel">
+          <form class="form" action="/schedule" method="get">
+            <label class="field">
+              <span>Start date</span>
+              <input type="date" name="startDate" value="<%= values.startDate %>" required />
+            </label>
+            <label class="field">
+              <span>End date</span>
+              <input type="date" name="endDate" value="<%= values.endDate %>" required />
+            </label>
+            <label class="field">
+              <span>Start book</span>
+              <select name="startBook" required>
+                <% books.forEach(function(book) { %>
+                  <option value="<%= book.name %>" <%= book.name === values.startBook ? "selected" : "" %>><%= book.name %></option>
+                <% }) %>
+              </select>
+            </label>
+            <label class="field">
+              <span>End book</span>
+              <select name="endBook" required>
+                <% books.forEach(function(book) { %>
+                  <option value="<%= book.name %>" <%= book.name === values.endBook ? "selected" : "" %>><%= book.name %></option>
+                <% }) %>
+              </select>
+            </label>
+
+            <div class="actions">
+              <button type="submit" class="btn primary">Build schedule</button>
+              <button type="submit" formaction="/download" formmethod="get" class="btn ghost">
+                Download PDF
+              </button>
+            </div>
+            <p class="hint">
+              Tip: choose any range—365 days, 180 days, or a focused season—and we will spread the readings evenly.
+            </p>
+          </form>
+
+          <% if (error) { %>
+            <div class="alert error"><%= error %></div>
+          <% } %>
+
+          <% if (schedule && schedule.length) { %>
+            <div class="alert success">
+              <strong><%= schedule.length %></strong> days scheduled across <strong><%= stats.selectedChapters %></strong> chapters.
+            </div>
+          <% } %>
+        </div>
+      </section>
+
+      <% if (schedule && schedule.length) { %>
+        <section class="schedule">
+          <header class="section-head">
+            <div>
+              <p class="eyebrow">Preview</p>
+              <h2>Your day-by-day readings</h2>
+              <p class="lede">Each day lists the chapters to read to finish by your chosen end date.</p>
+            </div>
+            <div class="pill">Range: <%= values.startBook %> → <%= values.endBook %> • <%= stats.totalDays %> days</div>
+          </header>
+          <div class="table">
+            <div class="table-head">
+              <div>Date</div>
+              <div>Reading</div>
+            </div>
+            <div class="table-body">
+              <% schedule.forEach(function(item, idx) { %>
+                <div class="table-row">
+                  <div>
+                    <span class="checkbox"></span>
+                    <span class="date-label"><%= item.date %></span>
+                  </div>
+                  <div><%= item.reading %></div>
+                </div>
+              <% }); %>
+            </div>
+          </div>
+        </section>
+      <% } else { %>
+        <section class="empty-state">
+          <div class="card">
+            <p class="eyebrow">No schedule yet</p>
+            <h3>Pick dates to generate your plan.</h3>
+            <p>Use the form above to set your calendar. We will spread all 1,189 chapters evenly so you finish on time.</p>
+          </div>
+        </section>
+      <% } %>
+    </main>
+
+    <footer class="footer">
+      <!--p>Made with Scripture in mind — generates on the fly, no accounts needed.</p-->
+    </footer>
+  </body>
+</html>
