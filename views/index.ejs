@@ -7,9 +7,17 @@
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
+    <div id="progress-overlay" class="progress-overlay" hidden>
+      <div class="progress-card">
+        <p>Generating schedule…</p>
+        <div class="progress-track">
+          <div class="progress-fill"></div>
+        </div>
+      </div>
+    </div>
     <header class="topbar">
       <div class="brand">Bible Plan Builder</div>
-      <div class="top-meta"> 
+      <div class="top-meta">
         <span>Total: <strong><%= stats.totalChapters %></strong></span>
         <span class="divider">•</span>
         <span>Selected: <strong><%= stats.selectedChapters || stats.totalChapters %></strong></span>
@@ -112,6 +120,21 @@
     </main>
 
     <footer class="footer">
+      <p>
+        Jeremiah 15:16 Your words were found and I ate them / And Your word became to me / The gladness and joy of my heart, /
+        For I am called by Your name, / O Jehovah, God of hosts.
+      </p>
     </footer>
+
+    <script>
+      const form = document.querySelector("form.form");
+      const overlay = document.getElementById("progress-overlay");
+      if (form && overlay) {
+        form.addEventListener("submit", () => {
+          overlay.hidden = false;
+          document.body.classList.add("loading");
+        });
+      }
+    </script>
   </body>
 </html>
