@@ -26,39 +26,121 @@
 
     <main class="page">
       <section class="hero">
-        <div>
+        <div class="hero-copy">
           <p class="eyebrow">From date to daily readings</p>
           <h1>Generate a printable Bible reading schedule</h1>
           <p class="lede">
-            Place your start and end dates and get a day-by-day plan to finish the entire Bible.
+            Place your start and end dates and get a day-by-day plan you can preview, print as a compact PDF, or import into your phone calendar.
           </p>
         </div>
-        <div class="panel">
+        <div class="panel hero-panel">
           <form class="form" action="/schedule" method="get">
-            <label class="field">
-              <span>Start date</span>
-              <input type="date" name="startDate" value="<%= values.startDate %>" required />
-            </label>
-            <label class="field">
-              <span>End date</span>
-              <input type="date" name="endDate" value="<%= values.endDate %>" required />
-            </label>
-            <label class="field">
-              <span>Start book</span>
-              <select name="startBook" required>
-                <% books.forEach(function(book) { %>
-                  <option value="<%= book.name %>" <%= book.name === values.startBook ? "selected" : "" %>><%= book.name %></option>
-                <% }) %>
-              </select>
-            </label>
-            <label class="field">
-              <span>End book</span>
-              <select name="endBook" required>
-                <% books.forEach(function(book) { %>
-                  <option value="<%= book.name %>" <%= book.name === values.endBook ? "selected" : "" %>><%= book.name %></option>
-                <% }) %>
-              </select>
-            </label>
+            <section class="form-section">
+              <div>
+                <p class="eyebrow">Reading plan</p>
+                <h3>Choose your range</h3>
+                <p class="hint">
+                  Set the dates and book range for the schedule you want to generate.
+                </p>
+              </div>
+              <div class="form-grid">
+                <label class="field">
+                  <span>Start date</span>
+                  <input type="date" name="startDate" value="<%= values.startDate %>" required />
+                </label>
+                <label class="field">
+                  <span>End date</span>
+                  <input type="date" name="endDate" value="<%= values.endDate %>" required />
+                </label>
+                <label class="field">
+                  <span>Start book</span>
+                  <select name="startBook" required>
+                    <% books.forEach(function(book) { %>
+                      <option value="<%= book.name %>" <%= book.name === values.startBook ? "selected" : "" %>><%= book.name %></option>
+                    <% }) %>
+                  </select>
+                </label>
+                <label class="field">
+                  <span>End book</span>
+                  <select name="endBook" required>
+                    <% books.forEach(function(book) { %>
+                      <option value="<%= book.name %>" <%= book.name === values.endBook ? "selected" : "" %>><%= book.name %></option>
+                    <% }) %>
+                  </select>
+                </label>
+              </div>
+            </section>
+
+            <section class="form-section">
+              <div class="form-divider">
+                <div>
+                  <p class="eyebrow">Calendar export</p>
+                  <h3>Create a phone calendar file</h3>
+                </div>
+                <p class="hint">
+                  Generates an <code>.ics</code> file for Apple Calendar or Android calendars with the reading details in each event and reminder.
+                </p>
+              </div>
+
+              <div class="form-grid form-grid-calendar">
+                <label class="field">
+                  <span>Calendar platform</span>
+                  <select name="calendarPlatform">
+                    <option value="ios" <%= values.calendarPlatform === "ios" ? "selected" : "" %>>iPhone / iPad</option>
+                    <option value="android" <%= values.calendarPlatform === "android" ? "selected" : "" %>>Android</option>
+                  </select>
+                </label>
+                <label class="field">
+                  <span>Daily reading time</span>
+                  <input type="time" name="readingTime" value="<%= values.readingTime %>" required />
+                </label>
+
+                <div class="reminder-card">
+                  <div class="reminder-copy">
+                    <span class="reminder-label">Notification settings</span>
+                    <p class="hint">
+                      Choose when the reminder should appear. The notification includes the exact chapters for that day.
+                    </p>
+                  </div>
+                  <div class="reminder-controls">
+                    <label class="field">
+                      <span>Remind me</span>
+                      <select name="reminderMode" data-reminder-mode>
+                        <option value="before" <%= values.reminderMode === "before" ? "selected" : "" %>>Before the reading time</option>
+                        <option value="atTime" <%= values.reminderMode === "atTime" ? "selected" : "" %>>At the reading time</option>
+                        <option value="none" <%= values.reminderMode === "none" ? "selected" : "" %>>No reminder</option>
+                      </select>
+                    </label>
+
+                    <div class="reminder-offset-row" data-reminder-offset-row>
+                      <label class="field reminder-offset-field" data-reminder-offset-field>
+                        <span>How long before?</span>
+                        <input
+                          type="number"
+                          min="1"
+                          max="365"
+                          name="reminderOffsetValue"
+                          value="<%= values.reminderOffsetValue %>"
+                          data-reminder-offset-input
+                        />
+                      </label>
+                      <label class="field reminder-offset-field" data-reminder-offset-field>
+                        <span>Unit</span>
+                        <select name="reminderOffsetUnit" data-reminder-offset-input>
+                          <option value="minutes" <%= values.reminderOffsetUnit === "minutes" ? "selected" : "" %>>Minutes</option>
+                          <option value="hours" <%= values.reminderOffsetUnit === "hours" ? "selected" : "" %>>Hours</option>
+                          <option value="days" <%= values.reminderOffsetUnit === "days" ? "selected" : "" %>>Days</option>
+                        </select>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="calendar-summary-box">
+                <strong>Current setup:</strong> <%= calendarSummary %>. Each event and reminder includes that day's reading details.
+              </div>
+            </section>
 
             <div class="actions">
               <button type="submit" class="btn primary" name="action" value="preview">Build schedule</button>
@@ -75,6 +157,19 @@
               >
                 Download PDF
               </button>
+              <button
+                type="submit"
+                formaction="/download/calendar"
+                formmethod="get"
+                formtarget="_blank"
+                rel="noopener"
+                class="btn ghost"
+                name="action"
+                value="calendar"
+                data-skip-loading="true"
+              >
+                Download Calendar File
+              </button>
             </div>
           </form>
 
@@ -85,6 +180,9 @@
           <% if (schedule && schedule.length) { %>
             <div class="alert success">
               <strong><%= schedule.length %></strong> days scheduled across <strong><%= stats.selectedChapters %></strong> chapters.
+              <div class="alert-detail">
+                Calendar export: <strong><%= calendarExportCount %></strong> events for <%= calendarSummary %>.
+              </div>
             </div>
           <% } %>
         </div>
@@ -98,7 +196,10 @@
               <h2>Your day-by-day readings</h2>
               <p class="lede">Each day lists the chapters to read to finish by your chosen end date.</p>
             </div>
-            <div class="pill">Range: <%= values.startBook %> → <%= values.endBook %> • <%= stats.totalDays %> days</div>
+            <div class="section-pills">
+              <div class="pill">Range: <%= values.startBook %> → <%= values.endBook %> • <%= stats.totalDays %> days</div>
+              <div class="pill">Calendar: <%= calendarSummary %></div>
+            </div>
           </header>
           <div class="table">
             <div class="table-head">
@@ -108,12 +209,15 @@
             <div class="table-body">
               <% schedule.forEach(function(item, idx) { %>
                 <div class="table-row">
-                  <div>
+                  <div class="date-cell">
                     <span class="checkbox"></span>
-                    <span class="date-label"><%= item.date %></span>
+                    <div class="date-stack">
+                      <span class="day-chip">Day <%= idx + 1 %></span>
+                      <span class="date-label"><%= item.date %></span>
+                    </div>
                   </div>
-                  <div>
-                    <div><%= item.reading %></div>
+                  <div class="reading-cell">
+                    <div class="reading-title"><%= item.reading %></div>
                     <div class="reading-meta">≈ <%= item.minutes %> min · <%= item.chaptersCount %> chapter<%= item.chaptersCount === 1 ? "" : "s" %></div>
                   </div>
                 </div>
@@ -150,6 +254,29 @@
     <script>
       const form = document.querySelector("form.form");
       const overlay = document.getElementById("progress-overlay");
+      const reminderMode = document.querySelector("[data-reminder-mode]");
+      const reminderOffsetFields = document.querySelectorAll("[data-reminder-offset-field]");
+      const reminderOffsetRow = document.querySelector("[data-reminder-offset-row]");
+      const reminderOffsetInputs = document.querySelectorAll("[data-reminder-offset-input]");
+
+      const syncReminderFields = () => {
+        const showOffset = reminderMode && reminderMode.value === "before";
+        if (reminderOffsetRow) {
+          reminderOffsetRow.hidden = !showOffset;
+        }
+        reminderOffsetFields.forEach((field) => {
+          field.hidden = !showOffset;
+        });
+        reminderOffsetInputs.forEach((input) => {
+          input.disabled = !showOffset;
+        });
+      };
+
+      if (reminderMode) {
+        syncReminderFields();
+        reminderMode.addEventListener("change", syncReminderFields);
+      }
+
       if (form && overlay) {
         form.addEventListener("submit", (e) => {
           const submitter = e.submitter;

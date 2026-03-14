@@ -1,4 +1,4 @@
-// List of Bible books with chapter counts (Protestant canon)
+// List of Bible books with chapter counts
 module.exports = [
   { name: "Genesis", chapters: 50 },
   { name: "Exodus", chapters: 40 },
