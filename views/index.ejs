@@ -78,7 +78,7 @@
                   <h3>Create a phone calendar file</h3>
                 </div>
                 <p class="hint">
-                  Generates an <code>.ics</code> file for Apple Calendar or Android calendars with the reading details in each event and reminder.
+                  Generates an <code>.ics</code> file for Apple Calendar or Android calendars as one recurring schedule, so it can be removed as a single series later.
                 </p>
               </div>
 
@@ -138,7 +138,7 @@
               </div>
 
               <div class="calendar-summary-box">
-                <strong>Current setup:</strong> <%= calendarSummary %>. Each event and reminder includes that day's reading details.
+                <strong>Current setup:</strong> <%= calendarSummary %>. Each scheduled day keeps its own reading details, but the import is grouped as one removable series.
               </div>
             </section>
 
@@ -181,7 +181,7 @@
             <div class="alert success">
               <strong><%= schedule.length %></strong> days scheduled across <strong><%= stats.selectedChapters %></strong> chapters.
               <div class="alert-detail">
-                Calendar export: <strong><%= calendarExportCount %></strong> events for <%= calendarSummary %>.
+                Calendar export: <strong><%= calendarExportCount %></strong> scheduled readings in one removable series for <%= calendarSummary %>.
               </div>
             </div>
           <% } %>

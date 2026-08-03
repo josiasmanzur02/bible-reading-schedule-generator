@@ -282,6 +282,41 @@ function createIcsTimestamp(date = new Date()) {
     .replace(/\.\d{3}Z$/, "Z");
 }
 
+function createIcsLocalTimestamp(date) {
+  return dayjs(date).format("YYYYMMDDTHHmmss");
+}
+
+function buildCalendarEventStart(isoDate, calendarConfig) {
+  return dayjs(isoDate)
+    .hour(calendarConfig.startHour)
+    .minute(calendarConfig.startMinute)
+    .second(0)
+    .millisecond(0);
+}
+
+function createCalendarSeriesUid(values, calendarConfig, generatedAt) {
+  return `brsg-${values.startDate}-${values.endDate}-${calendarConfig.readingTime.replace(
+    ":",
+    ""
+  )}-${generatedAt.toLowerCase()}`;
+}
+
+function buildCalendarDescription(entry, values) {
+  return [
+    `Reading: ${entry.reading}`,
+    `Date: ${entry.date}`,
+    `Chapters: ${entry.chaptersCount}`,
+    `Estimated time: about ${entry.minutes} minutes`,
+    `Range: ${values.startBook} - ${values.endBook}`,
+  ].join("\n");
+}
+
+function buildReminderDescription(entry) {
+  return `Bible reading reminder: ${entry.reading} (${entry.chaptersCount} chapter${
+    entry.chaptersCount === 1 ? "" : "s"
+  })`;
+}
+
 function buildReminderTrigger(calendarConfig) {
   if (calendarConfig.reminderMode === "none") {
     return null;
@@ -300,10 +335,24 @@ function buildReminderTrigger(calendarConfig) {
 }
 
 function buildCalendarFile(schedule, values, calendarConfig) {
+  if (!schedule.length) {
+    return toIcsPayload([
+      "BEGIN:VCALENDAR",
+      "VERSION:2.0",
+      "PRODID:-//Bible Reading Schedule Generator//EN",
+      "CALSCALE:GREGORIAN",
+      "METHOD:PUBLISH",
+      "END:VCALENDAR",
+    ]);
+  }
+
   const generatedAt = createIcsTimestamp();
   const platformLabel =
     calendarConfig.platform === "android" ? "Android Calendar" : "Apple Calendar";
   const reminderTrigger = buildReminderTrigger(calendarConfig);
+  const seriesUid = createCalendarSeriesUid(values, calendarConfig, generatedAt);
+  const seriesStartAt = buildCalendarEventStart(schedule[0].isoDate, calendarConfig);
+  const masterEndAt = seriesStartAt.add(15, "minute");
   const headerLines = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
@@ -318,31 +367,50 @@ function buildCalendarFile(schedule, values, calendarConfig) {
     )}`,
   ];
 
+  const excludedDates = schedule
+    .filter((entry) => entry.chaptersCount === 0)
+    .map((entry) => createIcsLocalTimestamp(buildCalendarEventStart(entry.isoDate, calendarConfig)));
+
+  // Use one recurring series plus RECURRENCE-ID overrides so calendars can delete the
+  // entire imported plan at once while preserving each day's reading details.
+  const masterEventLines = [
+    "BEGIN:VEVENT",
+    `UID:${seriesUid}`,
+    `DTSTAMP:${generatedAt}`,
+    `DTSTART:${createIcsLocalTimestamp(seriesStartAt)}`,
+    `DTEND:${createIcsLocalTimestamp(masterEndAt)}`,
+    `RRULE:FREQ=DAILY;COUNT=${schedule.length}`,
+    `SUMMARY:${escapeIcsText("Bible reading schedule")}`,
+    `DESCRIPTION:${escapeIcsText(
+      `Daily Bible readings from ${formatUiDate(values.startDate)} to ${formatUiDate(
+        values.endDate
+      )}. Delete the series to remove the full schedule at once.`
+    )}`,
+    "STATUS:CONFIRMED",
+    "TRANSP:OPAQUE",
+  ];
+
+  if (excludedDates.length) {
+    masterEventLines.push(`EXDATE:${excludedDates.join(",")}`);
+  }
+
+  masterEventLines.push("END:VEVENT");
+
   const eventPayloads = schedule
     .filter((entry) => entry.chaptersCount > 0)
-    .map((entry, index) => {
-      const startAt = dayjs(entry.isoDate)
-        .hour(calendarConfig.startHour)
-        .minute(calendarConfig.startMinute)
-        .second(0)
-        .millisecond(0);
+    .map((entry) => {
+      const startAt = buildCalendarEventStart(entry.isoDate, calendarConfig);
       const endAt = startAt.add(Math.max(entry.minutes, 15), "minute");
-      const descriptionLines = [
-        `Reading: ${entry.reading}`,
-        `Date: ${entry.date}`,
-        `Chapters: ${entry.chaptersCount}`,
-        `Estimated time: about ${entry.minutes} minutes`,
-        `Range: ${values.startBook} - ${values.endBook}`,
-      ];
 
       const eventLines = [
         "BEGIN:VEVENT",
-        `UID:${entry.isoDate.replace(/-/g, "")}-${index}@bible-reading-schedule-generator`,
+        `UID:${seriesUid}`,
+        `RECURRENCE-ID:${createIcsLocalTimestamp(startAt)}`,
         `DTSTAMP:${generatedAt}`,
-        `DTSTART:${startAt.format("YYYYMMDDTHHmmss")}`,
-        `DTEND:${endAt.format("YYYYMMDDTHHmmss")}`,
+        `DTSTART:${createIcsLocalTimestamp(startAt)}`,
+        `DTEND:${createIcsLocalTimestamp(endAt)}`,
         `SUMMARY:${escapeIcsText(`Read ${entry.reading}`)}`,
-        `DESCRIPTION:${escapeIcsText(descriptionLines.join("\n"))}`,
+        `DESCRIPTION:${escapeIcsText(buildCalendarDescription(entry, values))}`,
         "STATUS:CONFIRMED",
         "TRANSP:OPAQUE",
       ];
@@ -352,11 +420,7 @@ function buildCalendarFile(schedule, values, calendarConfig) {
           "BEGIN:VALARM",
           reminderTrigger,
           "ACTION:DISPLAY",
-          `DESCRIPTION:${escapeIcsText(
-            `Bible reading reminder: ${entry.reading} (${entry.chaptersCount} chapter${
-              entry.chaptersCount === 1 ? "" : "s"
-            })`
-          )}`,
+          `DESCRIPTION:${escapeIcsText(buildReminderDescription(entry))}`,
           "END:VALARM"
         );
       }
@@ -365,9 +429,9 @@ function buildCalendarFile(schedule, values, calendarConfig) {
       return toIcsPayload(eventLines);
     });
 
-  return `${toIcsPayload(headerLines)}${eventPayloads.join("")}${toIcsPayload([
-    "END:VCALENDAR",
-  ])}`;
+  return `${toIcsPayload(headerLines)}${toIcsPayload(masterEventLines)}${eventPayloads.join("")}${toIcsPayload(
+    ["END:VCALENDAR"]
+  )}`;
 }
 
 function drawPdfStatCard(doc, x, y, width, label, value) {
@@ -761,5 +825,9 @@ if (require.main === module) {
     console.log(`Bible reading schedule generator listening on port ${port}`);
   });
 }
+
+app.buildSchedule = buildSchedule;
+app.buildCalendarFile = buildCalendarFile;
+app.validateCalendarOptions = validateCalendarOptions;
 
 module.exports = app;
